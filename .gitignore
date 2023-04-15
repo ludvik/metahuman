@@ -5,6 +5,7 @@ Saved
 .DS_Store
 .vscode
 .vs
+.vsconfig
 .ignore
 *.VC.db
 *.opensdf
