@@ -1,25 +1,14 @@
-import json
-#pip install pygame
-import pygame
-#pip install pyaudio
+
 import pyaudio
-import wave
-import glob
-import time
-
-import io
-import os
-from _datetime import datetime;
-
 
 # Imports the Google Cloud client library
 #pip install google-cloud-speech
 from google.cloud import speech
-
 #pip install google-cloud-texttospeech
 from google.cloud import texttospeech
 
-from google.auth.credentials import Credentials
+import concurrent.futures
+from google.api_core.exceptions import GoogleAPICallError
 
 # Constants
 FORMAT = pyaudio.paInt16
@@ -42,18 +31,34 @@ class GoogleSpeech:
         self.texttospeech_audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.LINEAR16)
 
 
-    def SpeechToText(self,wav_data):
+    def SpeechToText(self, raw_wav):
+        audio = {"content": raw_wav}
 
-        audio = speech.RecognitionAudio(content=bytes(wav_data))
+        try:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(self.speech_client.recognize, config=self.config, audio=audio)
+                response = future.result(timeout=30)  # Set the desired timeout value in seconds
 
-        response = self.speech_client.recognize(config=self.config,audio=audio)
+        except GoogleAPICallError as api_error:
+            print(f"Google Speech API Call Error: {api_error}")
+            return 'Nothing'
+        except concurrent.futures.TimeoutError as timeout_error:
+            print(f"Timeout Error: {timeout_error}")
+            return 'Nothing'
+        except Exception as e:
+            print(f"An error occurred while calling Google Speech API: {e}")
+            return 'Nothing'
 
-        # For each response, send to chat bot
-        speech_to_text = "Nothing"
-        for result in response.results:
-            speech_to_text = result.alternatives[0].transcript
-            
-        return speech_to_text
+        if not response.results:
+            return 'Nothing'
+
+        # The first alternative is the most likely one for this portion of the audio.
+        transcript = response.results[0].alternatives[0].transcript
+        confidence = response.results[0].alternatives[0].confidence
+
+        print("Transcript: ", transcript)
+        print("Confidence: ", confidence)
+        return transcript.strip()
 
     def TextToSpeech(self,text_to_convert):
         input_text = texttospeech.types.SynthesisInput(text=text_to_convert)

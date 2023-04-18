@@ -1,3 +1,4 @@
+import os
 #pip install aiohttp
 from aiohttp import web
 
@@ -15,7 +16,8 @@ sio.attach(app)
 ## we can define aiohttp endpoints just as we normally
 ## would with no change
 async def index(request):
-    with open('.\\utils\\index.html') as f:
+    file_path = os.path.join('.', 'utils', 'index.html')
+    with open(file_path) as f:
         print('PYTHON SERVER: index called')
         return web.Response(text=f.read(), content_type='text/html')
 

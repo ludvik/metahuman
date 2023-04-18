@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "relayserver"
+version = "0.1.0"
+description = "local server to relay message and command to metahuman process."
+authors = ["haomin liu <haomin_liu@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+aiohttp = "^3.8.4"
+python-socketio = "^5.8.0"
+webrtcvad = "^2.0.10"
+pyaudio = "^0.2.13"
+pygame = "^2.3.0"
+openai = "^0.27.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
